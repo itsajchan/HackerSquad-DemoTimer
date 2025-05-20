@@ -1,103 +1,142 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect, useRef } from 'react';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [part1Duration, setPart1Duration] = useState(300); // 5 minutes in seconds
+  const [part2Duration, setPart2Duration] = useState(120); // 2 minutes in seconds
+  const [timeRemaining, setTimeRemaining] = useState(part1Duration);
+  const [isRunning, setIsRunning] = useState(false);
+  const [currentPart, setCurrentPart] = useState(1); // 1 for DING, 2 for Applause
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  // Refs for audio elements - you'll need to provide actual audio files
+  const dingSoundRef = useRef<HTMLAudioElement>(null);
+  const applauseSoundRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    if (!isRunning) return;
+
+    if (timeRemaining <= 0) {
+      if (currentPart === 1) {
+        // Play DING sound
+        dingSoundRef.current?.play();
+        // alert('DING!'); // Placeholder for DING sound
+        setCurrentPart(2);
+        setTimeRemaining(part2Duration);
+      } else if (currentPart === 2) {
+        // Play Applause sound
+        applauseSoundRef.current?.play();
+        // alert('Time for Applause!'); // Placeholder for Applause sound
+        setIsRunning(false);
+        // Optionally reset to part 1 for the next speaker
+        // setCurrentPart(1);
+        // setTimeRemaining(part1Duration);
+      }
+      return;
+    }
+
+    const timerId = setInterval(() => {
+      setTimeRemaining((prevTime) => prevTime - 1);
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, [isRunning, timeRemaining, currentPart, part1Duration, part2Duration]);
+
+  const handleStartPause = () => {
+    if (isRunning) {
+      setIsRunning(false);
+    } else {
+      if (timeRemaining === 0 && currentPart === 2) { // If timer ended, reset before starting
+        setCurrentPart(1);
+        setTimeRemaining(part1Duration);
+      }
+      setIsRunning(true);
+    }
+  };
+
+  const handleReset = () => {
+    setIsRunning(false);
+    setCurrentPart(1);
+    setTimeRemaining(part1Duration);
+  };
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-12 bg-gray-900 text-white font-sans">
+      {/* Audio elements (hidden) */}
+      <audio ref={dingSoundRef} src="/Ding.mp3" preload="auto"></audio>
+      <audio ref={applauseSoundRef} src="/Applause.mp3" preload="auto"></audio>
+
+      <div className="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md">
+        <h1 className="text-4xl font-bold text-center mb-6 text-teal-400">
+          HackerSquad Timer
+        </h1>
+
+        <div className="mb-6 space-y-4">
+          <div>
+            <label htmlFor="part1Duration" className="block text-sm font-medium text-gray-400 mb-1">
+              Part 1 Duration (seconds - DING):
+            </label>
+            <input
+              type="number"
+              id="part1Duration"
+              value={part1Duration}
+              onChange={(e) => setPart1Duration(Math.max(0, parseInt(e.target.value, 10) || 0))}
+              disabled={isRunning}
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          </div>
+          <div>
+            <label htmlFor="part2Duration" className="block text-sm font-medium text-gray-400 mb-1">
+              Part 2 Duration (seconds - Applause):
+            </label>
+            <input
+              type="number"
+              id="part2Duration"
+              value={part2Duration}
+              onChange={(e) => setPart2Duration(Math.max(0, parseInt(e.target.value, 10) || 0))}
+              disabled={isRunning}
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition"
+            />
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        <div className="text-center mb-8">
+          <p className="text-lg text-gray-300 mb-1">
+            Current Part: {currentPart === 1 ? '1 (Presentation)' : '2 (Q&A / Applause Cue)'}
+          </p>
+          <div className="text-7xl font-mono font-bold text-teal-400 tracking-wider">
+            {formatTime(timeRemaining)}
+          </div>
+        </div>
+
+        <div className="flex justify-center space-x-4">
+          <button
+            onClick={handleStartPause}
+            className={`px-8 py-3 rounded-md text-lg font-semibold transition-colors
+                        ${isRunning ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'}
+                        text-white w-32`}
+          >
+            {isRunning ? 'Pause' : (timeRemaining === 0 && currentPart === 2) ? 'Restart' : 'Start'}
+          </button>
+          <button
+            onClick={handleReset}
+            disabled={isRunning && timeRemaining > 0 && currentPart === 1} // Disable reset unless paused or part 1 not started
+            className="px-8 py-3 rounded-md text-lg font-semibold bg-red-500 hover:bg-red-600 text-white transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed w-32"
+          >
+            Reset
+          </button>
+        </div>
+
+        <p className="text-xs text-gray-500 text-center mt-8">
+          {currentPart === 1 ? 'Timer will DING then switch to Part 2.' : 'Timer will prompt for APPLAUSE then stop.'}
+        </p>
+      </div>
+    </main>
   );
 }
