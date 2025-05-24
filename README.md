@@ -23,10 +23,5 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Learn More
 
-[HackerSquad](https://hackersquad.io) is an events platform designed to engage developer audiences throughout hackathons of various formats, whether it's a micro hackathon like a Hack Night, Hack Day, or a full blown hackathon that spans more than a single day. HackerSquad lets people form teams, discover who else is in the room, and 
+[HackerSquad](https://hackersquad.io) is an events platform designed to engage developer audiences throughout hackathons of various formats, whether it's a micro hackathon like a Hack Night, Hack Day, or a full blown hackathon that spans more than a single day. HackerSquad lets builders discover who else is in the room, helps them form teams, 
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
